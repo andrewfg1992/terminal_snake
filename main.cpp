@@ -13,6 +13,8 @@ enum eDirection { STOP = 0, LEFT = 1, RIGHT = 2, UP = 3, DOWN = 4 };
 eDirection dir;
 
 int x, y;
+std::vector<int> tail_x, tail_y;
+uint16_t len;
 int food_x, food_y;
 int score;
 
@@ -22,6 +24,8 @@ void setup()
 	x = room_width / 2 + 1;
 	y = room_height / 2 + 1;
 	dir = STOP;
+	len = 1;
+	score = 0;
 	food_x = 1 + (std::rand() % (room_width - 2));
 	food_y = 1 + (std::rand() % (room_height - 2));
 	while (food_x == x && food_y == y)
@@ -62,11 +66,20 @@ void draw()
 	// add snake player
 	screen.at(y).at(x) = 'O';
 
+	// add the tail
+	for (int i = 0; i < tail_x.size(); i++)
+	{
+		screen.at(tail_y.at(i)).at(tail_x.at(i)) = 'o';
+	}
+
 	// actually print the screen
 	for (int i = 0; i < screen.size(); i++)
 	{
 		std::cout << screen.at(i) << std::endl;
 	}
+
+	// also print score
+	std::cout << "Score: " << score << std::endl;
 }
 
 void input()
@@ -93,6 +106,19 @@ void input()
 
 void logic()
 {
+	// Manage the snake tail
+	tail_x.insert(tail_x.begin(), x);
+	tail_y.insert(tail_y.begin(), y);
+
+	while(tail_x.size() >= len)
+	{
+		tail_x.pop_back();
+	}
+
+	while (tail_y.size() >= len)
+	{
+		tail_y.pop_back();
+	}
 
 	// Move the character
 	switch (dir)
@@ -110,24 +136,38 @@ void logic()
 		x += 1;
 		break;
 	}
+
+	// if snake collides with the wall, end the game
+	if ((x<=0 || x>=room_width - 1) || (y<=0 || y>=room_height - 1))
+		gameOver = true;
+
+	// Check if colliding with food
+	if ((x == food_x) && (y == food_y))
+	{
+		score++;
+		len++;
+
+		// respawn the food
+		food_x = 1 + (std::rand() % (room_width - 2));
+		food_y = 1 + (std::rand() % (room_height - 2));
+	}
+
 }
 
 int main()
 {
 	setup();
 
-	
-	
-
 	while (!gameOver)
 	{
 		auto start = std::chrono::high_resolution_clock::now();
-		draw();
 		input();
 		logic();
+		draw();
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> elapsed = end - start;
-		std::this_thread::sleep_for(std::chrono::microseconds(500000) - elapsed);
+		std::this_thread::sleep_for(std::chrono::microseconds(125000) - elapsed);
+		std::cout << 1 + (std::rand() % (room_height - 2)) << std::endl;
 	}
 
 }
