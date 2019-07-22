@@ -65,6 +65,10 @@ void draw()
 
 	// add snake player
 	screen.at(y).at(x) = 'O';
+	if (gameOver)
+	{
+		screen.at(y).at(x) = 'X';
+	}
 
 	// add the tail
 	for (int i = 0; i < tail_x.size(); i++)
@@ -120,6 +124,8 @@ void logic()
 		tail_y.pop_back();
 	}
 
+	// TODO don't allow "180s"
+
 	// Move the character
 	switch (dir)
 	{
@@ -140,6 +146,8 @@ void logic()
 	// if snake collides with the wall, end the game
 	if ((x<=0 || x>=room_width - 1) || (y<=0 || y>=room_height - 1))
 		gameOver = true;
+
+	// TODO check collision with tail
 
 	// Check if colliding with food
 	if ((x == food_x) && (y == food_y))
