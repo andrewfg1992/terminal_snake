@@ -65,15 +65,17 @@ void draw()
 
 	// add snake player
 	screen.at(y).at(x) = 'O';
-	if (gameOver)
-	{
-		screen.at(y).at(x) = 'X';
-	}
 
 	// add the tail
 	for (int i = 0; i < tail_x.size(); i++)
 	{
 		screen.at(tail_y.at(i)).at(tail_x.at(i)) = 'o';
+	}
+
+	// if dead, overwrite head with 'splat'
+	if (gameOver)
+	{
+		screen.at(y).at(x) = 'X';
 	}
 
 	// actually print the screen
@@ -93,16 +95,20 @@ void input()
 		switch (_getch())
 		{ // the real value
 			case 'w':
-				dir = UP;
+				if (dir != DOWN)	// ignore '180's
+					dir = UP;
 				break;
 			case 's':
-				dir = DOWN;
+				if (dir != UP)
+					dir = DOWN;
 				break;
 			case 'd':
-				dir = RIGHT;
+				if (dir != LEFT)
+					dir = RIGHT;
 				break;
 			case 'a':
-				dir = LEFT;
+				if (dir != RIGHT)
+					dir = LEFT;
 				break;
 		}
 	}
@@ -123,8 +129,6 @@ void logic()
 	{
 		tail_y.pop_back();
 	}
-
-	// TODO don't allow "180s"
 
 	// Move the character
 	switch (dir)
@@ -147,7 +151,12 @@ void logic()
 	if ((x<=0 || x>=room_width - 1) || (y<=0 || y>=room_height - 1))
 		gameOver = true;
 
-	// TODO check collision with tail
+	// check collision with tail
+	for (int i = 0; i < tail_x.size(); i++)
+	{
+		if (x == tail_x.at(i) && y == tail_y.at(i))
+			gameOver = true;
+	}
 
 	// Check if colliding with food
 	if ((x == food_x) && (y == food_y))
@@ -174,8 +183,7 @@ int main()
 		draw();
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> elapsed = end - start;
-		std::this_thread::sleep_for(std::chrono::microseconds(125000) - elapsed);
-		std::cout << 1 + (std::rand() % (room_height - 2)) << std::endl;
+		std::this_thread::sleep_for(std::chrono::microseconds(150000) - elapsed);
 	}
 
 }
